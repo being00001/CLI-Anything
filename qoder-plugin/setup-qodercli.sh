@@ -56,6 +56,14 @@ json_escape_path() {
     printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+# Cleanup function for temp files
+cleanup_temp() {
+    if [ -n "${TMP_CONFIG:-}" ] && [ -f "${TMP_CONFIG}" ]; then
+        rm -f "${TMP_CONFIG}"
+    fi
+}
+trap cleanup_temp EXIT
+
 # Create or update config
 if [ -f "${QODER_CONFIG}" ]; then
     # Config exists - need jq to safely update it
@@ -70,12 +78,20 @@ if [ -f "${QODER_CONFIG}" ]; then
         exit 1
     fi
 
+    # Validate existing config is valid JSON before attempting modification
+    if ! jq empty "${QODER_CONFIG}" 2>/dev/null; then
+        echo -e "${YELLOW}Error: ${QODER_CONFIG} contains invalid JSON.${NC}"
+        echo -e "${YELLOW}Please fix the JSON syntax before running this script.${NC}"
+        exit 1
+    fi
+
     # Check if plugin already registered (using --arg for safe variable passing)
     if jq -e --arg path "${PLUGIN_DIR}" '.plugins.sources.local[]? | select(.path == $path)' "${QODER_CONFIG}" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Plugin already registered in ${QODER_CONFIG}${NC}"
     else
         # Add plugin to existing config
-        TMP_CONFIG=$(mktemp)
+        # Create temp file in same directory for atomic mv on same filesystem
+        TMP_CONFIG=$(mktemp "${CONFIG_DIR}/.qoder.json.XXXXXX")
         jq --arg path "${PLUGIN_DIR}" '
             .plugins //= {} |
             .plugins.sources //= {} |
