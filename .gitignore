@@ -39,6 +39,7 @@
 !/drawio/
 !/mermaid/
 !/adguardhome/
+!/novita/
 
 # Step 5: Inside each software dir, ignore everything (including dotfiles)
 /gimp/*
@@ -85,6 +86,7 @@
 !/drawio/agent-harness/
 !/mermaid/agent-harness/
 !/adguardhome/agent-harness/
+!/novita/agent-harness/
 
 # Step 7: Ignore build artifacts within allowed dirs
 **/__pycache__/
