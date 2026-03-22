@@ -439,6 +439,7 @@ Example: DOMShell provides browser automation via MCP tools.
 **Backend wrapper** (`utils/<service>_backend.py`):
 ```python
 import asyncio
+from typing import Any
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
